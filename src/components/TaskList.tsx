@@ -377,6 +377,7 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, studyPlans = [], onUpdateTas
         isOneTimeTask: editFormData.isOneTimeTask,
         schedulingPreference: editFormData.schedulingPreference,
         startDate: editFormData.startDate || today,
+        sessionDuration: estimationMode === 'session' ? ((parseInt(sessionData.sessionHours) || 0) + (parseInt(sessionData.sessionMinutes) || 0) / 60) : undefined,
       });
       setEditingTaskId(null);
       setEditFormData({});
