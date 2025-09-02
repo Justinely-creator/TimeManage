@@ -292,6 +292,12 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, onUpdateTask, onDeleteTask, 
     const hours = Math.floor(totalMinutes / 60);
     const minutes = totalMinutes % 60;
 
+    // Snapshot original values for validation checks
+    setOriginalEditSnapshot({
+      startDate: task.startDate,
+      totalHours: task.estimatedHours || 0,
+      isOneTimeTask: task.isOneTimeTask || false,
+    });
 
     setEditFormData({
       title: task.title,
