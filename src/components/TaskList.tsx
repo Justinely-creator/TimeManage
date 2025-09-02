@@ -35,6 +35,8 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, onUpdateTask, onDeleteTask, 
     sessionHours: '2',
     sessionMinutes: '0'
   });
+  // Track original values for validation logic
+  const [originalEditSnapshot, setOriginalEditSnapshot] = useState<{ startDate?: string; totalHours: number; isOneTimeTask?: boolean } | null>(null);
 
   // Sorting state with localStorage persistence
   const [sortBy, setSortBy] = useState<'deadline' | 'startDate' | 'createdAt'>(() => {
