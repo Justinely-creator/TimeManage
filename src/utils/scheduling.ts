@@ -3653,7 +3653,7 @@ export const preserveManualSchedules = (
 ): StudyPlan[] => {
   // Create a map of manually rescheduled sessions by their unique identifier
   const manualSchedules = new Map<string, StudySession>();
-  
+
   existingPlans.forEach(plan => {
     plan.plannedTasks.forEach(session => {
       if (session.originalTime && session.originalDate && session.isManualOverride) {
@@ -3669,10 +3669,10 @@ export const preserveManualSchedules = (
     if (!prevPlan) return;
 
     plan.plannedTasks.forEach(session => {
-      const prevSession = prevPlan.plannedTasks.find(s => 
+      const prevSession = prevPlan.plannedTasks.find(s =>
         s.taskId === session.taskId && s.sessionNumber === session.sessionNumber
       );
-      
+
       if (prevSession) {
         // Preserve done sessions
         if (prevSession.done) {
@@ -3681,9 +3681,13 @@ export const preserveManualSchedules = (
           session.actualHours = prevSession.actualHours;
           session.completedAt = prevSession.completedAt;
         }
-        // Preserve skipped sessions
+        // Preserve skipped sessions (including their duration and time)
         else if (prevSession.status === 'skipped') {
           session.status = 'skipped';
+          session.allocatedHours = prevSession.allocatedHours;
+          session.startTime = prevSession.startTime;
+          session.endTime = prevSession.endTime;
+          session.skipMetadata = prevSession.skipMetadata;
         }
         // Preserve manual reschedules with their exact positions
         else if (prevSession.originalTime && prevSession.originalDate && prevSession.isManualOverride) {
@@ -3692,11 +3696,11 @@ export const preserveManualSchedules = (
           session.originalDate = prevSession.originalDate;
           session.rescheduledAt = prevSession.rescheduledAt;
           session.isManualOverride = prevSession.isManualOverride;
-          
+
           // Preserve the actual rescheduled times and positions
           session.startTime = prevSession.startTime;
           session.endTime = prevSession.endTime;
-          
+
           // If the session was moved to a different date, ensure it stays there
           if (prevSession.originalDate !== plan.date) {
             const targetPlan = newPlans.find(p => p.date === prevSession.originalDate);
@@ -3729,6 +3733,24 @@ export const preserveManualSchedules = (
             session.endTime = `${endTime.getHours().toString().padStart(2, '0')}:${endTime.getMinutes().toString().padStart(2, '0')}`;
           }
         }
+      }
+    });
+  });
+
+  // Final pass: ensure skipped/completed/done sessions from previous plans are preserved
+  existingPlans.forEach(prevPlan => {
+    const targetPlan = newPlans.find(p => p.date === prevPlan.date);
+    if (!targetPlan) return;
+
+    prevPlan.plannedTasks.forEach(prevSession => {
+      const isFixed = prevSession.done || prevSession.status === 'completed' || prevSession.status === 'skipped';
+      if (!isFixed) return;
+
+      const existsInNew = targetPlan.plannedTasks.some(s => s.taskId === prevSession.taskId && s.sessionNumber === prevSession.sessionNumber);
+      if (!existsInNew) {
+        // Append the fixed session exactly as it was to preserve user intent
+        targetPlan.plannedTasks.push({ ...prevSession });
+        targetPlan.totalStudyHours = Math.round((targetPlan.totalStudyHours + prevSession.allocatedHours) * 60) / 60;
       }
     });
   });
