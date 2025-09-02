@@ -538,7 +538,19 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, onUpdateTask, onDeleteTask, 
                               onChange={(e) => setEditFormData({ ...editFormData, startDate: e.target.value || today })}
                               className="w-full px-3 py-2 border rounded-lg text-base focus:ring-2 focus:ring-blue-500 focus:border-transparent border-gray-300 bg-white dark:bg-gray-800 dark:text-white"
                             />
-                            {/* Start date validation warning removed for editing tasks */}
+                            {/* Inline guidance when required */}
+                            {(() => {
+                              const totalHours = getEffectiveTotalTime();
+                              const originalStartInPast = !!(originalEditSnapshot?.startDate && originalEditSnapshot.startDate < today);
+                              const estimationChanged = originalEditSnapshot != null && Math.abs((originalEditSnapshot.totalHours || 0) - totalHours) > 1e-6;
+                              const startStillPast = !!(editFormData.startDate && editFormData.startDate < today);
+                              if (originalStartInPast && estimationChanged && startStillPast) {
+                                return (
+                                  <div className="text-amber-600 text-xs mt-1">Start date is in the past. Update it to today or a future date to change the time estimate.</div>
+                                );
+                              }
+                              return null;
+                            })()}
                           </div>
                         )}
                       </div>
