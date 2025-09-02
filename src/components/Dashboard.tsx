@@ -511,11 +511,13 @@ const Dashboard: React.FC<DashboardProps> = ({ tasks, studyPlans, dailyAvailable
                   const isOverdue = sessionStatusResult === 'overdue';
                   const isRescheduled = session.isManualOverride;
                   
-                  // Calculate progress for this task
+                  // Calculate progress for this task (match TaskList: completed + skipped = started)
                   const allSessionsForTask = studyPlans.flatMap(plan => plan.plannedTasks).filter(s => s.taskId === task.id);
-                  const completedSessions = allSessionsForTask.filter(s => s.done).length;
+                  const completedSessions = allSessionsForTask.filter(s => s.done || s.status === 'completed').length;
+                  const skippedSessions = allSessionsForTask.filter(s => s.status === 'skipped').length;
+                  const startedSessions = completedSessions + skippedSessions;
                   const totalSessions = allSessionsForTask.length;
-                  const progressPercent = totalSessions > 0 ? (completedSessions / totalSessions) * 100 : 0;
+                  const progressPercent = totalSessions > 0 ? (startedSessions / totalSessions) * 100 : 0;
                   
                   // Enhanced color system for session status and importance
                   const statusColors = {
@@ -640,7 +642,7 @@ const Dashboard: React.FC<DashboardProps> = ({ tasks, studyPlans, dailyAvailable
                             style={{ width: `${progressPercent}%` }}
                           ></div>
                         </div>
-                        <div className="text-xs text-gray-500 text-right mt-1 dark:text-gray-400">{completedSessions} / {totalSessions} sessions</div>
+                        <div className="text-xs text-gray-500 text-right mt-1 dark:text-gray-400">{startedSessions} / {totalSessions} sessions</div>
                       </div>
                     </div>
                   );
