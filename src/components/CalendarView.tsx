@@ -1926,6 +1926,9 @@ const CalendarView: React.FC<CalendarViewProps> = ({
         }
       `}</style>
 
+      {/* Now line updater */}
+      <NowLineUpdater containerRef={containerRef} view={currentView} minTime={minTime} maxTime={maxTime} onUpdate={setNowLineTop} />
+
       {/* Color Settings Modal */}
       {showColorSettings && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
