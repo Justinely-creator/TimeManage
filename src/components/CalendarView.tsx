@@ -1572,12 +1572,14 @@ const CalendarView: React.FC<CalendarViewProps> = ({
       />
 
       <div
+        ref={containerRef}
         style={{
           height: currentView === 'month' ? '900px' : '600px',
           borderRadius: '1.5rem',
           overflow: 'hidden',
           background: 'rgba(255,255,255,0.95)',
           boxShadow: '0 4px 24px rgba(80,80,180,0.07)',
+          position: 'relative'
         }}
         className="calendar-grid-container dark:bg-gray-900 dark:bg-opacity-95"
       >
