@@ -339,7 +339,12 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, onUpdateTask, onDeleteTask, 
 
     if (!editFormData.impact) return false;
     if (editFormData.deadline && editFormData.deadline < today) return false;
-    // Start date validation removed for editing tasks - tasks are already created
+
+    // If original start date is in the past and estimation changed, require updating start date (for non one-sitting tasks)
+    const originalStartInPast = !!(originalEditSnapshot?.startDate && originalEditSnapshot.startDate < today);
+    const estimationChanged = originalEditSnapshot != null && Math.abs((originalEditSnapshot.totalHours || 0) - totalHours) > 1e-6;
+    const startStillPast = !!(editFormData.startDate && editFormData.startDate < today);
+    if (originalStartInPast && estimationChanged && !editFormData.isOneTimeTask && startStillPast) return false;
 
     // Custom category validation (1-50 characters)
     if (editFormData.category === 'Custom...' && (!editFormData.customCategory?.trim() || editFormData.customCategory.trim().length > 50)) return false;
@@ -351,7 +356,7 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, onUpdateTask, onDeleteTask, 
     }
 
     return true;
-  }, [editFormData, today, userSettings]);
+  }, [editFormData, today, userSettings, originalEditSnapshot]);
 
   const saveEdit = () => {
     if (editingTaskId && isEditFormValid) {
