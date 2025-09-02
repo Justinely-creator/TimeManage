@@ -2300,4 +2300,44 @@ const CalendarView: React.FC<CalendarViewProps> = ({
   );
 };
 
+function NowLineUpdater({ containerRef, view, minTime, maxTime, onUpdate }: { containerRef: React.RefObject<HTMLDivElement>, view: string, minTime: Date, maxTime: Date, onUpdate: (pos: number | null) => void }) {
+  useEffect(() => {
+    if (!(view === 'day' || view === 'week')) { onUpdate(null); return; }
+
+    const compute = () => {
+      const container = containerRef.current;
+      if (!container) { onUpdate(null); return; }
+      const timeContent = container.querySelector('.rbc-time-content') as HTMLElement | null;
+      const header = container.querySelector('.rbc-time-header') as HTMLElement | null;
+      const daySlot = container.querySelector('.rbc-day-slot') as HTMLElement | null;
+      if (!timeContent || !header || !daySlot) { onUpdate(null); return; }
+
+      const now = new Date();
+      const minutesNow = now.getHours() * 60 + now.getMinutes();
+      const minutesMin = minTime.getHours() * 60 + minTime.getMinutes();
+      const minutesMax = maxTime.getHours() * 60 + maxTime.getMinutes();
+      if (minutesNow < minutesMin || minutesNow > minutesMax) { onUpdate(null); return; }
+
+      const ratio = (minutesNow - minutesMin) / (minutesMax - minutesMin);
+      const slotHeight = daySlot.scrollHeight;
+      const headerHeight = header.getBoundingClientRect().height;
+      const yInContent = ratio * slotHeight;
+      const scrollTop = timeContent.scrollTop;
+      const top = headerHeight + yInContent - scrollTop;
+      onUpdate(top);
+    };
+
+    compute();
+    const interval = setInterval(compute, 60000);
+    const scroller = containerRef.current?.querySelector('.rbc-time-content');
+    const onScroll = () => compute();
+    scroller?.addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      clearInterval(interval);
+      scroller?.removeEventListener('scroll', onScroll as any);
+    };
+  }, [containerRef, view, minTime, maxTime, onUpdate]);
+  return null;
+}
+
 export default CalendarView;
