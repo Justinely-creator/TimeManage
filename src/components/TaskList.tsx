@@ -1005,6 +1005,21 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, studyPlans = [], onUpdateTas
                                 Due {new Date(task.deadline).toLocaleDateString()}
                               </span>
                             )}
+                            {task.deadline && (() => {
+                              const deadline = new Date(task.deadline);
+                              const now = new Date();
+                              const daysUntil = Math.ceil((deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+                              const cls = daysUntil <= 0
+                                ? 'text-red-600 dark:text-red-400'
+                                : daysUntil <= 3
+                                  ? 'text-yellow-600 dark:text-yellow-400'
+                                  : 'text-gray-500 dark:text-gray-400';
+                              return (
+                                <span className={cls}>
+                                  {daysUntil <= 0 ? 'Overdue' : daysUntil === 1 ? 'Due tomorrow' : `Due in ${daysUntil} days`}
+                                </span>
+                              );
+                            })()}
                             <span>{formatTime(task.estimatedHours)}</span>
                             {(() => {
                               let sd: number | null = null;
