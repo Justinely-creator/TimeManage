@@ -997,33 +997,34 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, studyPlans = [], onUpdateTas
                         )}
                       </div>
 
-                        <div className="space-y-2">
-                        {task.subject && (
-                            <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-300">
-                              <span className="font-medium"></span>
-                              <span className="truncate">{task.subject}</span>
-                            </div>
-                          )}
-                          
-                          <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-300">
-                            <span className="font-medium"></span>
-                            <span>{formatTime(task.estimatedHours)}</span>
-                          </div>
-                          
-                          {task.startDate && (
-                            <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-300">
-                              <span className="font-medium"></span>
-                              <span>Start: {new Date(task.startDate).toLocaleDateString()}</span>
-                            </div>
-                          )}
-                          {task.deadline && (
-                            <div className="flex items-center space-x-2 text-sm">
-                              <span className="font-medium"></span>
+                        <div className="space-y-1">
+                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-600 dark:text-gray-300">
+                            {task.startDate && <span>Start {new Date(task.startDate).toLocaleDateString()}</span>}
+                            {task.deadline && (
                               <span className={`${getUrgencyColor(task.deadline)}`}>
-                                Due: {new Date(task.deadline).toLocaleDateString()}
+                                Due {new Date(task.deadline).toLocaleDateString()}
                               </span>
-                            </div>
-                          )}
+                            )}
+                            <span>{formatTime(task.estimatedHours)}</span>
+                            {(() => {
+                              let sd: number | null = null;
+                              if (typeof task.sessionDuration === 'number' && task.sessionDuration > 0) {
+                                sd = task.sessionDuration;
+                              } else {
+                                const sessions = studyPlans.flatMap(p => p.plannedTasks.filter(s => s.taskId === task.id));
+                                if (sessions.length > 0) {
+                                  const durations = sessions.map(s => s.allocatedHours).sort((a,b)=>a-b);
+                                  const mid = Math.floor(durations.length/2);
+                                  sd = durations.length % 2 ? durations[mid] : (durations[mid-1]+durations[mid])/2;
+                                }
+                              }
+                              if (!sd) return null;
+                              const hrs = Math.floor(sd);
+                              const mins = Math.round((sd - hrs) * 60);
+                              const label = hrs > 0 && mins > 0 ? `${hrs}h ${mins}m` : hrs > 0 ? `${hrs}h` : `${mins}m`;
+                              return <span className="text-gray-500 dark:text-gray-400">Session {label}</span>;
+                            })()}
+                          </div>
 
                           {(() => {
                             const sessions = studyPlans.flatMap(p => p.plannedTasks.filter(s => s.taskId === task.id));
@@ -1034,30 +1035,19 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, studyPlans = [], onUpdateTas
                             const started = completed + skipped;
                             const pct = Math.round((started / total) * 100);
                             return (
-                              <div className="mt-1">
-                                <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400">
-                                  <span>Progress</span>
-                                  <span>{started}/{total} sessions</span>
-                                </div>
-                                <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mt-1">
+                              <div className="mt-0.5 flex items-center gap-2">
+                                <div className="w-24 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                                   <div className="h-full bg-blue-500 dark:bg-blue-400" style={{ width: `${pct}%` }} />
                                 </div>
+                                <span className="text-[11px] text-gray-500 dark:text-gray-400">{started}/{total}</span>
                               </div>
                             );
                           })()}
 
-                        {task.category && (
-                            <div className="flex items-center space-x-2">
-                              <span className={`text-xs px-2 py-1 rounded-full ${getCategoryColor(task.category)}`}>
-                            {task.category}
-                          </span>
-                            </div>
-                          )}
-                          
-                        {task.description && (
-                            <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">
-                            {task.description}
-                          </p>
+                          {task.description && (
+                            <p className="text-xs text-gray-600 dark:text-gray-300 line-clamp-1">
+                              {task.description}
+                            </p>
                           )}
                         </div>
                       </div>
