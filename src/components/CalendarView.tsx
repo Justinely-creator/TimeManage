@@ -1571,7 +1571,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
 
       <div
         style={{
-          height: '600px',
+          height: currentView === 'month' ? '900px' : '600px',
           borderRadius: '1.5rem',
           overflow: 'hidden',
           background: 'rgba(255,255,255,0.95)',
@@ -1604,6 +1604,12 @@ const CalendarView: React.FC<CalendarViewProps> = ({
             }
             min={minTime}
             max={maxTime}
+            popup
+            popupOffset={{ x: 10, y: 10 }}
+            onShowMore={(events, date) => {
+              // Ensure navigate still updates our date when show more is clicked
+              setCurrentDate(date as Date);
+            }}
             onSelectEvent={(event: any) => handleSelectEvent(event as CalendarEvent)}
             eventPropGetter={(event: any, start: Date, end: Date, isSelected: boolean) => eventStyleGetter(event as CalendarEvent, start, end, isSelected)}
             formats={{
@@ -1674,93 +1680,149 @@ const CalendarView: React.FC<CalendarViewProps> = ({
         .dark .rbc-label, .dark .rbc-header, .dark .rbc-date-cell, .dark .rbc-timeslot-group, .dark .rbc-time-gutter, .dark .rbc-time-header-content {
           color: #e5e7eb !important;
         }
-        
+
+        /* Month view aesthetics */
+        .rbc-month-view .rbc-header {
+          background: linear-gradient(180deg, #f8fafc, #eef2ff) !important;
+          font-weight: 600 !important;
+          color: #334155 !important;
+          border-bottom: 1px solid #e5e7eb !important;
+        }
+        .dark .rbc-month-view .rbc-header {
+          background: linear-gradient(180deg, #0b1220, #111827) !important;
+          color: #e5e7eb !important;
+          border-bottom: 1px solid #374151 !important;
+        }
+        .rbc-month-view .rbc-date-cell {
+          padding: 6px 8px !important;
+          font-weight: 600 !important;
+        }
+        .rbc-month-view .rbc-date-cell .rbc-button-link {
+          padding: 2px 6px !important;
+          border-radius: 8px !important;
+        }
+        .rbc-today {
+          background: rgba(59,130,246,0.08) !important;
+        }
+        .dark .rbc-today {
+          background: rgba(37,99,235,0.12) !important;
+        }
+        .rbc-month-row {
+          border-bottom: 1px solid #e5e7eb !important;
+        }
+        .dark .rbc-month-row {
+          border-bottom: 1px solid #374151 !important;
+        }
+        .rbc-show-more {
+          margin: 2px 4px !important;
+          padding: 2px 6px !important;
+          border-radius: 6px !important;
+          background: #eef2ff !important;
+          color: #4338ca !important;
+          font-size: 11px !important;
+        }
+        .dark .rbc-show-more {
+          background: #1f2937 !important;
+          color: #a78bfa !important;
+        }
+        .rbc-month-view .rbc-event {
+          margin: 2px 4px !important;
+          padding: 1px 6px !important;
+          border-radius: 8px !important;
+          font-size: 11px !important;
+          line-height: 1.2 !important;
+        }
+        .rbc-overlay {
+          border-radius: 10px !important;
+          box-shadow: 0 10px 24px rgba(0,0,0,0.15) !important;
+        }
+
         /* Dynamic spacing based on interval size */
         .rbc-time-view .rbc-timeslot-group {
           min-height: 24px !important;
         }
-        
+
         /* Zoom-based time slot heights */
         .rbc-time-slot {
           min-height: 24px !important;
         }
-        
+
         /* More distinct hour grid lines */
         .rbc-time-slot:first-child {
           border-top: 3px solid #d1d5db !important;
         }
-        
+
         .rbc-time-slot:not(:first-child) {
           border-top: 1px solid #e5e7eb !important;
         }
-        
+
         /* Dark mode hour grid lines */
         .dark .rbc-time-slot:first-child {
           border-top: 3px solid #4b5563 !important;
         }
-        
+
         .dark .rbc-time-slot:not(:first-child) {
           border-top: 1px solid #374151 !important;
         }
-        
+
         /* Ensure events have minimum height for readability */
         .rbc-event {
           min-height: 22px !important;
           min-width: 60px !important;
         }
-        
+
         /* Better text sizing for event blocks */
         .rbc-event .text-sm {
           font-size: 12px !important;
           line-height: 1.3 !important;
         }
-        
+
         /* Enhanced time gutter for zoomed views */
         .rbc-time-gutter {
           min-width: 60px !important;
           font-weight: 500 !important;
         }
-        
+
         /* Better visual separation for zoomed intervals */
         .rbc-time-header-content {
           border-bottom: 2px solid #e0e7ef !important;
         }
-        
+
         .dark .rbc-time-header-content {
           border-bottom: 2px solid #27272a !important;
         }
-        
+
         /* Darker styling for past days */
         .rbc-day-bg.rbc-off-range {
           background-color: #f8f9fa !important;
         }
-        
+
         .rbc-day-bg.rbc-off-range.rbc-past {
           background-color: #e9ecef !important;
         }
-        
+
         .rbc-day-bg.rbc-past {
           background-color: #f1f3f4 !important;
         }
-        
+
         /* Dark mode past days */
         .dark .rbc-day-bg.rbc-off-range {
           background-color: #1f2937 !important;
         }
-        
+
         .dark .rbc-day-bg.rbc-off-range.rbc-past {
           background-color: #111827 !important;
         }
-        
+
         .dark .rbc-day-bg.rbc-past {
           background-color: #1e293b !important;
         }
-        
+
         /* Past time slots in time view */
         .rbc-timeslot-group.rbc-past {
           background-color: #f8f9fa !important;
         }
-        
+
         .dark .rbc-timeslot-group.rbc-past {
           background-color: #1f2937 !important;
         }
