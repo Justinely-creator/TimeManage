@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { Calendar, momentLocalizer, Views } from 'react-big-calendar';
 import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop';
 import { DndProvider } from 'react-dnd';
@@ -791,7 +791,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
           modifiedOccurrences: updatedModifiedOccurrences
         });
 
-        setDragFeedback(`✅ Commitment moved to ${newStartTime} - ${newEndTime} on ${moment(targetDate).format('MMM D')}`);
+        setDragFeedback(`�� Commitment moved to ${newStartTime} - ${newEndTime} on ${moment(targetDate).format('MMM D')}`);
         setTimeout(() => setDragFeedback(''), 3000);
         return;
       }
@@ -930,7 +930,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
         plannedTasks: [newSession],
         totalStudyHours: sessionDuration,
         isOverloaded: false,
-        availableHours: getDaySpecificDailyHours(newPlanDate, settings)
+        availableHours: getDaySpecificDailyHours(targetDate, settings)
       });
 
       // Also remove from original plan if it exists
