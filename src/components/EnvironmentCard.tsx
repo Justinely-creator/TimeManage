@@ -232,6 +232,30 @@ const EnvironmentCard: React.FC = () => {
       return;
     }
 
+    // Detect restricted preview hosts where cross-origin fetches are commonly blocked
+    const host = (typeof window !== 'undefined' && window.location && window.location.hostname) ? window.location.hostname : '';
+    const isRestrictedHost = /(?:\.fly\.dev|\.vercel\.app|\.netlify\.app)$/i.test(host);
+    const offline = typeof navigator !== 'undefined' && navigator.onLine === false;
+
+    if (isRestrictedHost || offline) {
+      // Do not attempt network calls; rely on cache or minimal fallback
+      let cached: EnvData | null = null;
+      try { cached = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null'); } catch {}
+      if (cached) {
+        setData(cached);
+      } else {
+        const minimal = { timezone: tzFromDevice, fetchedAt: Date.now() } as EnvData;
+        setData(minimal);
+        try { localStorage.setItem(CACHE_KEY, JSON.stringify(minimal)); } catch {}
+      }
+      // Backoff further attempts for this session
+      try { sessionStorage.setItem(SESSION_KEY, '1'); } catch {}
+      localStorage.setItem('timepilot-env-net-disabled-until', String(Date.now() + 60 * 60 * 1000));
+      setError('Network unavailable in preview environment');
+      setLoading(false);
+      return;
+    }
+
     if (!sessionFetched || !cacheIsFresh) {
       fetchEnv().finally(() => {
         try { sessionStorage.setItem(SESSION_KEY, '1'); } catch {}
