@@ -3649,7 +3649,8 @@ const combineSessionsOnSameDayWithValidation = (studyPlans: StudyPlan[], setting
  */
 export const preserveManualSchedules = (
   newPlans: StudyPlan[],
-  existingPlans: StudyPlan[]
+  existingPlans: StudyPlan[],
+  options: { preserveManualReschedules?: boolean } = { preserveManualReschedules: true }
 ): StudyPlan[] => {
   // Create a map of manually rescheduled sessions by their unique identifier
   const manualSchedules = new Map<string, StudySession>();
@@ -3662,6 +3663,8 @@ export const preserveManualSchedules = (
       }
     });
   });
+
+  const preserveManual = options.preserveManualReschedules !== false;
 
   // Apply manual schedule preservation to new plans
   newPlans.forEach(plan => {
@@ -3689,8 +3692,8 @@ export const preserveManualSchedules = (
           session.endTime = prevSession.endTime;
           session.skipMetadata = prevSession.skipMetadata;
         }
-        // Preserve manual reschedules with their exact positions
-        else if (prevSession.originalTime && prevSession.originalDate && prevSession.isManualOverride) {
+        // Preserve manual reschedules with their exact positions (optional)
+        else if (preserveManual && prevSession.originalTime && prevSession.originalDate && prevSession.isManualOverride) {
           // Preserve all the original reschedule metadata
           session.originalTime = prevSession.originalTime;
           session.originalDate = prevSession.originalDate;
@@ -3711,8 +3714,8 @@ export const preserveManualSchedules = (
             }
           }
         }
-        // Preserve other rescheduled sessions (but allow regeneration of times)
-        else if (prevSession.originalTime && prevSession.originalDate) {
+        // Preserve other rescheduled sessions metadata (optional)
+        else if (preserveManual && prevSession.originalTime && prevSession.originalDate) {
           session.originalTime = prevSession.originalTime;
           session.originalDate = prevSession.originalDate;
           session.rescheduledAt = prevSession.rescheduledAt;
@@ -4215,8 +4218,8 @@ export const generateNewStudyPlanWithPreservation = (
   // First, generate the new study plan
   const result = generateNewStudyPlan(tasks, settings, fixedCommitments, existingStudyPlans);
 
-  // Apply manual schedule preservation
-  const preservedPlans = preserveManualSchedules(result.plans, existingStudyPlans);
+  // Apply manual schedule preservation (includes fixed sessions)
+  const preservedPlans = preserveManualSchedules(result.plans, existingStudyPlans, { preserveManualReschedules: true });
 
   // Apply intelligent workload balancing around one-sitting tasks
   const balancedPlans = rebalanceAroundOneSittingTasks(preservedPlans, tasks, settings, fixedCommitments);
@@ -4228,4 +4231,18 @@ export const generateNewStudyPlanWithPreservation = (
     plans: smoothedPlans,
     suggestions: result.suggestions
   };
+};
+
+// Generate a new plan but only preserve completed/skipped sessions from previous plans
+export const generateNewStudyPlanPreservingFixedOnly = (
+  tasks: Task[],
+  settings: UserSettings,
+  fixedCommitments: FixedCommitment[],
+  existingStudyPlans: StudyPlan[] = []
+): { plans: StudyPlan[]; suggestions: Array<{ taskTitle: string; unscheduledMinutes: number }> } => {
+  const result = generateNewStudyPlan(tasks, settings, fixedCommitments, existingStudyPlans);
+  const preservedFixedOnly = preserveManualSchedules(result.plans, existingStudyPlans, { preserveManualReschedules: false });
+  const balancedPlans = rebalanceAroundOneSittingTasks(preservedFixedOnly, tasks, settings, fixedCommitments);
+  const smoothedPlans = applyWorkloadSmoothing(balancedPlans, tasks, settings, fixedCommitments);
+  return { plans: smoothedPlans, suggestions: result.suggestions };
 };
