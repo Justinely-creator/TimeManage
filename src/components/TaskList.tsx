@@ -379,6 +379,7 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, onUpdateTask, onDeleteTask, 
       });
       setEditingTaskId(null);
       setEditFormData({});
+      setOriginalEditSnapshot(null);
       setShowAdvancedOptions(false);
     }
   };
@@ -386,6 +387,7 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, onUpdateTask, onDeleteTask, 
   const cancelEdit = () => {
     setEditingTaskId(null);
     setEditFormData({});
+    setOriginalEditSnapshot(null);
     setShowAdvancedOptions(false);
   };
 
