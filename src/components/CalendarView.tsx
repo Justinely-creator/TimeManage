@@ -158,6 +158,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({
   const [isDragging, setIsDragging] = useState(false);
   const [dragFeedback, setDragFeedback] = useState<string>('');
   const [showInfoModal, setShowInfoModal] = useState(false);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [nowLineTop, setNowLineTop] = useState<number | null>(null);
 
 
   // Persist calendar view to localStorage
