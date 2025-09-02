@@ -213,7 +213,15 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, onUpdateTask, onDeleteTask, 
 
     if (!editFormData.impact) errors.push('Please select task importance');
     if (editFormData.deadline && editFormData.deadline < today) errors.push('Deadline cannot be in the past');
-    // Start date validation removed for editing tasks - tasks are already created
+
+    // If original start date is in the past and user changed estimation, require updating start date (for non one-sitting tasks)
+    const originalStartInPast = !!(originalEditSnapshot?.startDate && originalEditSnapshot.startDate < today);
+    const estimationChanged = originalEditSnapshot != null && Math.abs((originalEditSnapshot.totalHours || 0) - totalHours) > 1e-6;
+    const startStillPast = !!(editFormData.startDate && editFormData.startDate < today);
+    const requiresStartDateUpdate = originalStartInPast && estimationChanged && !editFormData.isOneTimeTask && startStillPast;
+    if (requiresStartDateUpdate) {
+      errors.push('Start date is in the past. Please update the start date to today or a future date to change the time estimate.');
+    }
 
     if (editFormData.category === 'Custom...' && (!editFormData.customCategory?.trim() || editFormData.customCategory.trim().length > 50)) {
       errors.push('Custom category must be between 1-50 characters');
