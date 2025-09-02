@@ -1657,11 +1657,29 @@ const CalendarView: React.FC<CalendarViewProps> = ({
             onDragStart={handleDragStart}
           />
         )}
+        {(nowLineTop !== null) && (currentView === 'day' || currentView === 'week') && (
+          <div
+            style={{
+              position: 'absolute',
+              top: nowLineTop,
+              left: 0,
+              right: 0,
+              height: 0,
+              borderTop: '2px solid #ef4444',
+              zIndex: 10,
+              pointerEvents: 'none'
+            }}
+          />
+        )}
       </div>
       {/* Add custom CSS for thicker interval lines and better spacing */}
       <style>{`
+        /* Zebra half-hours */
+        .rbc-time-view .rbc-timeslot-group .rbc-time-slot:nth-child(even) { background-color: rgba(99,102,241,0.04); }
+        .dark .rbc-time-view .rbc-timeslot-group .rbc-time-slot:nth-child(even) { background-color: rgba(99,102,241,0.08); }
+
         .rbc-time-slot {
-          border-bottom: 2px solid #e0e7ef !important;
+          border-bottom: 1px solid #e5e7eb !important;
         }
         .dark .calendar-grid-container {
           background: rgba(24,24,27,0.95) !important;
