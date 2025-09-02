@@ -997,73 +997,81 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, studyPlans = [], onUpdateTas
                         )}
                       </div>
 
-                        <div className="space-y-1">
-                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-600 dark:text-gray-300">
-                            {task.startDate && <span>Start {new Date(task.startDate).toLocaleDateString()}</span>}
-                            {task.deadline && (
-                              <span className={`${getUrgencyColor(task.deadline)}`}>
-                                Due {new Date(task.deadline).toLocaleDateString()}
-                              </span>
-                            )}
-                            {task.deadline && (() => {
-                              const deadline = new Date(task.deadline);
-                              const now = new Date();
-                              const daysUntil = Math.ceil((deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-                              const cls = daysUntil <= 0
-                                ? 'text-red-600 dark:text-red-400'
-                                : daysUntil <= 3
-                                  ? 'text-yellow-600 dark:text-yellow-400'
-                                  : 'text-gray-500 dark:text-gray-400';
+                        <div className="mt-1 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          <div>
+                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-600 dark:text-gray-300">
+                              {task.startDate && <span>Start {new Date(task.startDate).toLocaleDateString()}</span>}
+                            </div>
+
+                            {(() => {
+                              const sessions = studyPlans.flatMap(p => p.plannedTasks.filter(s => s.taskId === task.id));
+                              const total = sessions.length;
+                              if (total === 0) return null;
+                              const completed = sessions.filter(s => s.done || s.status === 'completed').length;
+                              const skipped = sessions.filter(s => s.status === 'skipped').length;
+                              const started = completed + skipped;
+                              const pct = Math.round((started / total) * 100);
                               return (
-                                <span className={cls}>
-                                  {daysUntil <= 0 ? 'Overdue' : daysUntil === 1 ? 'Due tomorrow' : `Due in ${daysUntil} days`}
-                                </span>
+                                <div className="mt-1 flex items-center gap-2">
+                                  <div className="w-24 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                    <div className="h-full bg-blue-500 dark:bg-blue-400" style={{ width: `${pct}%` }} />
+                                  </div>
+                                  <span className="text-[11px] text-gray-500 dark:text-gray-400">{started}/{total}</span>
+                                </div>
                               );
                             })()}
-                            <span>{formatTime(task.estimatedHours)}</span>
-                            {(() => {
-                              let sd: number | null = null;
-                              if (typeof task.sessionDuration === 'number' && task.sessionDuration > 0) {
-                                sd = task.sessionDuration;
-                              } else {
-                                const sessions = studyPlans.flatMap(p => p.plannedTasks.filter(s => s.taskId === task.id));
-                                if (sessions.length > 0) {
-                                  const durations = sessions.map(s => s.allocatedHours).sort((a,b)=>a-b);
-                                  const mid = Math.floor(durations.length/2);
-                                  sd = durations.length % 2 ? durations[mid] : (durations[mid-1]+durations[mid])/2;
-                                }
-                              }
-                              if (!sd) return null;
-                              const hrs = Math.floor(sd);
-                              const mins = Math.round((sd - hrs) * 60);
-                              const label = hrs > 0 && mins > 0 ? `${hrs}h ${mins}m` : hrs > 0 ? `${hrs}h` : `${mins}m`;
-                              return <span className="text-gray-500 dark:text-gray-400">Session {label}</span>;
-                            })()}
+
+                            {task.description && (
+                              <p className="text-xs text-gray-600 dark:text-gray-300 line-clamp-1 mt-1">
+                                {task.description}
+                              </p>
+                            )}
                           </div>
-
-                          {(() => {
-                            const sessions = studyPlans.flatMap(p => p.plannedTasks.filter(s => s.taskId === task.id));
-                            const total = sessions.length;
-                            if (total === 0) return null;
-                            const completed = sessions.filter(s => s.done || s.status === 'completed').length;
-                            const skipped = sessions.filter(s => s.status === 'skipped').length;
-                            const started = completed + skipped;
-                            const pct = Math.round((started / total) * 100);
-                            return (
-                              <div className="mt-0.5 flex items-center gap-2">
-                                <div className="w-24 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                                  <div className="h-full bg-blue-500 dark:bg-blue-400" style={{ width: `${pct}%` }} />
-                                </div>
-                                <span className="text-[11px] text-gray-500 dark:text-gray-400">{started}/{total}</span>
-                              </div>
-                            );
-                          })()}
-
-                          {task.description && (
-                            <p className="text-xs text-gray-600 dark:text-gray-300 line-clamp-1">
-                              {task.description}
-                            </p>
-                          )}
+                          <div className="flex flex-col items-start sm:items-end gap-1">
+                            <div className="flex flex-wrap items-center gap-2 text-xs">
+                              {task.deadline && (
+                                <span className={`${getUrgencyColor(task.deadline)}`}>
+                                  Due {new Date(task.deadline).toLocaleDateString()}
+                                </span>
+                              )}
+                              {task.deadline && (() => {
+                                const deadline = new Date(task.deadline);
+                                const now = new Date();
+                                const daysUntil = Math.ceil((deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+                                const cls = daysUntil <= 0
+                                  ? 'text-red-600 dark:text-red-400'
+                                  : daysUntil <= 3
+                                    ? 'text-yellow-600 dark:text-yellow-400'
+                                    : 'text-gray-500 dark:text-gray-400';
+                                return (
+                                  <span className={cls}>
+                                    {daysUntil <= 0 ? 'Overdue' : daysUntil === 1 ? 'Due tomorrow' : `Due in ${daysUntil} days`}
+                                  </span>
+                                );
+                              })()}
+                            </div>
+                            <div className="flex flex-wrap items-center gap-3 text-xs text-gray-600 dark:text-gray-300">
+                              <span>{formatTime(task.estimatedHours)}</span>
+                              {(() => {
+                                let sd: number | null = null;
+                                if (typeof task.sessionDuration === 'number' && task.sessionDuration > 0) {
+                                  sd = task.sessionDuration;
+                                } else {
+                                  const sessions = studyPlans.flatMap(p => p.plannedTasks.filter(s => s.taskId === task.id));
+                                  if (sessions.length > 0) {
+                                    const durations = sessions.map(s => s.allocatedHours).sort((a,b)=>a-b);
+                                    const mid = Math.floor(durations.length/2);
+                                    sd = durations.length % 2 ? durations[mid] : (durations[mid-1]+durations[mid])/2;
+                                  }
+                                }
+                                if (!sd) return null;
+                                const hrs = Math.floor(sd);
+                                const mins = Math.round((sd - hrs) * 60);
+                                const label = hrs > 0 && mins > 0 ? `${hrs}h ${mins}m` : hrs > 0 ? `${hrs}h` : `${mins}m`;
+                                return <span className="text-gray-500 dark:text-gray-400">Session {label}</span>;
+                              })()}
+                            </div>
+                          </div>
                         </div>
                       </div>
                       
