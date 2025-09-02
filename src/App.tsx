@@ -2801,6 +2801,7 @@ function App() {
                             )}
                             <TaskList
                                 tasks={tasks}
+                                studyPlans={studyPlans}
                                 onUpdateTask={handleUpdateTask}
                                 onDeleteTask={handleDeleteTask}
                                 autoRemovedTasks={autoRemovedTasks}
