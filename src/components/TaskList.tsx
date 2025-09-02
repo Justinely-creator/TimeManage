@@ -968,12 +968,12 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, studyPlans = [], onUpdateTas
                   <div className="space-y-3">
                     <div className="flex items-start justify-between">
                       <div className="flex-1 min-w-0">
-                      <div className="flex items-center space-x-2 mb-2">
+                      <div className="flex items-center gap-2 mb-1">
                         <h3 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-white truncate">
                           {task.title}
                         </h3>
                         {task.importance && (
-                            <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded-full dark:bg-red-900 dark:text-red-200 flex-shrink-0">
+                          <span className="text-[10px] bg-red-100 text-red-800 px-2 py-0.5 rounded-full dark:bg-red-900 dark:text-red-200 flex-shrink-0">
                             Important
                           </span>
                         )}
@@ -984,14 +984,18 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, studyPlans = [], onUpdateTas
                           const skipped = sessions.filter(s => s.status === 'skipped').length;
                           const started = completed + skipped;
                           const hasStarted = started > 0;
-                          const pct = total > 0 ? Math.round((started / total) * 100) : 0;
                           return (
-                            <span className={`text-xs px-2 py-1 rounded-full ${hasStarted ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'}`}>
+                            <span className={`text-[10px] px-2 py-0.5 rounded-full ${hasStarted ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'}`}>
                               {hasStarted ? 'In Progress' : 'Not Started'}
                             </span>
                           );
                         })()}
-                        </div>
+                        {task.category && (
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full ${getCategoryColor(task.category)}`}>
+                            {task.category}
+                          </span>
+                        )}
+                      </div>
 
                         <div className="space-y-2">
                         {task.subject && (
