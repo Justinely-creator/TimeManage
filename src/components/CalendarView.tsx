@@ -1684,9 +1684,11 @@ const CalendarView: React.FC<CalendarViewProps> = ({
         .dark .calendar-grid-container {
           background: rgba(24,24,27,0.95) !important;
         }
-        .dark .rbc-time-slot {
-          border-bottom: 2px solid #27272a !important;
-        }
+        .dark .rbc-time-slot { border-bottom: 1px solid #374151 !important; }
+
+        /* Sticky time gutter */
+        .rbc-time-gutter { position: sticky; left: 0; z-index: 3; background: rgba(255,255,255,0.9); backdrop-filter: saturate(120%) blur(2px); }
+        .dark .rbc-time-gutter { background: rgba(17,24,39,0.9); }
         .dark .rbc-month-row, .dark .rbc-month-view, .dark .rbc-header, .dark .rbc-time-header, .dark .rbc-timeslot-group, .dark .rbc-time-content {
           background-color: #18181b !important;
         }
