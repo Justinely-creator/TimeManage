@@ -1,10 +1,11 @@
 import React, { useState, useMemo } from 'react';
 import { BookOpen, Edit, Trash2, CheckCircle2, X, Info, ChevronDown, ChevronUp, ArrowUpDown, ArrowUp, ArrowDown, HelpCircle } from 'lucide-react';
-import { Task, UserSettings } from '../types';
+import { Task, UserSettings, StudyPlan } from '../types';
 import { formatTime, calculateSessionDistribution } from '../utils/scheduling';
 
 interface TaskListProps {
   tasks: Task[];
+  studyPlans?: StudyPlan[];
   onUpdateTask: (taskId: string, updates: Partial<Task>) => void;
   onDeleteTask: (taskId: string) => void;
   autoRemovedTasks?: string[];
@@ -23,7 +24,7 @@ type EditFormData = Partial<Task> & {
   isOneTimeTask?: boolean;
 };
 
-const TaskList: React.FC<TaskListProps> = ({ tasks, onUpdateTask, onDeleteTask, autoRemovedTasks = [], onDismissAutoRemovedTask, userSettings }) => {
+const TaskList: React.FC<TaskListProps> = ({ tasks, studyPlans = [], onUpdateTask, onDeleteTask, autoRemovedTasks = [], onDismissAutoRemovedTask, userSettings }) => {
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
   const [editFormData, setEditFormData] = useState<EditFormData>({});
   const [showCompletedTasks, setShowCompletedTasks] = useState(false);
@@ -975,8 +976,22 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, onUpdateTask, onDeleteTask, 
                             Important
                           </span>
                         )}
+                        {(() => {
+                          const sessions = studyPlans.flatMap(p => p.plannedTasks.filter(s => s.taskId === task.id));
+                          const total = sessions.length;
+                          const completed = sessions.filter(s => s.done || s.status === 'completed').length;
+                          const skipped = sessions.filter(s => s.status === 'skipped').length;
+                          const started = completed + skipped;
+                          const hasStarted = started > 0;
+                          const pct = total > 0 ? Math.round((started / total) * 100) : 0;
+                          return (
+                            <span className={`text-xs px-2 py-1 rounded-full ${hasStarted ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'}`}>
+                              {hasStarted ? 'In Progress' : 'Not Started'}
+                            </span>
+                          );
+                        })()}
                         </div>
-                        
+
                         <div className="space-y-2">
                         {task.subject && (
                             <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-300">
@@ -990,15 +1005,42 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, onUpdateTask, onDeleteTask, 
                             <span>{formatTime(task.estimatedHours)}</span>
                           </div>
                           
+                          {task.startDate && (
+                            <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-300">
+                              <span className="font-medium"></span>
+                              <span>Start: {new Date(task.startDate).toLocaleDateString()}</span>
+                            </div>
+                          )}
                           {task.deadline && (
                             <div className="flex items-center space-x-2 text-sm">
                               <span className="font-medium"></span>
                               <span className={`${getUrgencyColor(task.deadline)}`}>
                                 Due: {new Date(task.deadline).toLocaleDateString()}
-                            </span>
+                              </span>
                             </div>
                           )}
-                          
+
+                          {(() => {
+                            const sessions = studyPlans.flatMap(p => p.plannedTasks.filter(s => s.taskId === task.id));
+                            const total = sessions.length;
+                            if (total === 0) return null;
+                            const completed = sessions.filter(s => s.done || s.status === 'completed').length;
+                            const skipped = sessions.filter(s => s.status === 'skipped').length;
+                            const started = completed + skipped;
+                            const pct = Math.round((started / total) * 100);
+                            return (
+                              <div className="mt-1">
+                                <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400">
+                                  <span>Progress</span>
+                                  <span>{started}/{total} sessions</span>
+                                </div>
+                                <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mt-1">
+                                  <div className="h-full bg-blue-500 dark:bg-blue-400" style={{ width: `${pct}%` }} />
+                                </div>
+                              </div>
+                            );
+                          })()}
+
                         {task.category && (
                             <div className="flex items-center space-x-2">
                               <span className={`text-xs px-2 py-1 rounded-full ${getCategoryColor(task.category)}`}>
